@@ -2,7 +2,7 @@ class Store(object):
     def __init__(self, store_id=None, type=None, address=None):
         self.store_id = store_id
         self.type = type
-        self.addres = address
+        self.address = address
         
     """
     Getters

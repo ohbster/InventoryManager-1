@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import ttk as ttk
 import webbrowser
-from scripts.objgraph import flat
+import Product
 
 
 
@@ -170,7 +170,7 @@ qoh_labels.append(Label(qoh_frame, text='MSRP').grid(row=1, column=5))
 """
 
 #2
-def draw_rows(_count):
+def show_products(_count):
     x=2
     
     _style = ""
@@ -219,7 +219,7 @@ def draw_rows(_count):
         
         print(qoh_labels[-1].winfo_children())
 
-draw_rows(10)
+show_products(10)
 
 """
 TODO: Consider using labelFrame in order to highlight each row to make it easier
