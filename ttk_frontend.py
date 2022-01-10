@@ -20,7 +20,7 @@ class Dark_Theme(object):
 
 class View(object):
     
-    def __init__ (self, root=None, controller): #Pass the controller as an argument?
+    def __init__ (self, root=None, controller=None): #Pass the controller as an argument?
         
         if root is None:
             win=Tk()
@@ -156,54 +156,56 @@ class View(object):
         #tabs
         
         def draw_tab(self, _store_id = None):
-        tab_control=ttk.Notebook(tab_frame)
-        inventory_tab = ttk.Frame(tab_control)
-        amazon_tab = ttk.Frame(tab_control)
-        etsy_tab = ttk.Frame(tab_control)
-        
-        tab_control.add(inventory_tab,text='Inventory')
-        tab_control.add(amazon_tab,text='Amazon Inventory')
-        tab_control.add(etsy_tab,text='Etsy Inventory')
-        
-        tab_control.pack(expand=1, fill='both',side=LEFT)
-        
-        #add a button to optionally add more tabs
-        #add_tab_btn = ttk.Button(tab_frame, text="+")
-        #add_tab_btn.pack()
-        
-        """
-        Quantity on Hand Frame
-        
-        """
-        
-        product_list = dict()
-        product_list['Product_ID'] = 1
-        product_list['Name'] = 'ankh'
-        product_list['Image'] = 'ankh.jpg'
-        product_list['Description'] = "This is a 25mm ankh piece"
-        product_list['MSRP'] = 12.00
-        
-        qoh_frame = Frame(inventory_tab)
-        qoh_frame.pack(side=LEFT)
-        
-        qoh_labels = list()
-        """
-        Legend
-        
-        """
-        
-        """
-        qoh_labels.append(Label(qoh_frame, text='Product ID').grid(row=1, column=1, pady=1))
-        qoh_labels.append(Label(qoh_frame, text='Name').grid(row=1, column=2))
-        qoh_labels.append(Label(qoh_frame, text='Image').grid(row=1, column=3))
-        qoh_labels.append(Label(qoh_frame, text='Description').grid(row=1, column=4))
-        qoh_labels.append(Label(qoh_frame, text='MSRP').grid(row=1, column=5))
-        """
-        
-        #2
-        def show_products(self, _count):
-            x=2
+            tab_control=ttk.Notebook(self.tab_frame)
+            inventory_tab = ttk.Frame(tab_control)
+            amazon_tab = ttk.Frame(tab_control)
+            etsy_tab = ttk.Frame(tab_control)
             
+            tab_control.add(inventory_tab,text='Inventory')
+            tab_control.add(amazon_tab,text='Amazon Inventory')
+            tab_control.add(etsy_tab,text='Etsy Inventory')
+            
+            tab_control.pack(expand=1, fill='both',side=LEFT)
+            
+            #add a button to optionally add more tabs
+            #add_tab_btn = ttk.Button(tab_frame, text="+")
+            #add_tab_btn.pack()
+            
+            """
+            Quantity on Hand Frame
+            
+            """
+            
+            product_list = dict()
+            product_list['Product_ID'] = 1
+            product_list['Name'] = 'ankh'
+            product_list['Image'] = 'ankh.jpg'
+            product_list['Description'] = "This is a 25mm ankh piece"
+            product_list['MSRP'] = 12.00
+            
+            qoh_frame = Frame(inventory_tab)
+            qoh_frame.pack(side=LEFT)
+            
+            qoh_labels = list()
+            """
+            Legend
+            
+            """
+            
+            """
+            qoh_labels.append(Label(qoh_frame, text='Product ID').grid(row=1, column=1, pady=1))
+            qoh_labels.append(Label(qoh_frame, text='Name').grid(row=1, column=2))
+            qoh_labels.append(Label(qoh_frame, text='Image').grid(row=1, column=3))
+            qoh_labels.append(Label(qoh_frame, text='Description').grid(row=1, column=4))
+            qoh_labels.append(Label(qoh_frame, text='MSRP').grid(row=1, column=5))
+            """
+            
+            #2
+        def show_products(self, _count):
+            
+            
+            x=2
+            """
             _style = ""
             _bg =  ""
             for x in range(_count):
@@ -250,7 +252,7 @@ class View(object):
                 
                 print(qoh_labels[-1].winfo_children())
         
-        show_products(10)
+        show_products(10)"""
         
     """
     TODO: Consider using labelFrame in order to highlight each row to make it easier

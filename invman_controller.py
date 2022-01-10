@@ -10,6 +10,6 @@ class Controller(object):
         self.view.show_products()
         
     def show_product(self, _product_id):
-        try:
-            item = self.model.get_item(_product_id)
-            self.view.show_products()
+        item = self.model.get_item(_product_id)
+        self.view.show_products()
+       
