@@ -25,7 +25,7 @@ import Quantity
 """
 global Variables
 """
-class InventoryManagerModel:
+class Model:
        
     
     """
@@ -53,7 +53,7 @@ class InventoryManagerModel:
             self.db_path = _db_path
         
         else:
-            self.db_path = "inventory_manager.db"
+            self.db_path = "im.db"
         
         #open a conection to the database
         self.connect_to_db()
@@ -473,7 +473,7 @@ Testing Area
 *****************
 """
 
-myModel = InventoryManagerModel()
+myModel = Model()
 myModel.add_product("1", "ankh", "ankh.jpg", "this is an ankh", "12.00")
 myModel.add_product("2", "africa", "africa.jpg", "this is an african pendant", "13.00")
 
