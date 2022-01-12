@@ -1,4 +1,6 @@
-class Quantity(object):
+import EntityBase
+
+class Quantity(EntityBase.EntityBase):
     def __init__(self, product_id=None, store_id=None, quantity=None):
         self.product_id = product_id
         self.store_id = store_id
@@ -20,7 +22,7 @@ class Quantity(object):
     Setters
     """
     def set_quantity(self, _quantity):
-        self.quantity = _quantity
+        self.quantity = self.sanitize(_quantity) 
         
 
 

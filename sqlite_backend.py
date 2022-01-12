@@ -93,6 +93,8 @@ class Model:
     Handle Queries
     """
     def do_sql(self, _sql):
+        #TODO:Need some sanitize code here to protect from SQL INJECTION
+        
         try:
             c=self.conn.execute(_sql)
             return c
@@ -281,9 +283,7 @@ class Model:
     
     *********************************
     """
-    
-    
-    
+
     #possibly make this into a static method as  it doesn't alter state of instance
     def get_products(self):
         sql = f"""SELECT * FROM Products; """
@@ -406,6 +406,21 @@ class Model:
             return thisdict
         else:
             print(f"Warning: No inventory available for Store_ID {_store_id} in tables {self.table_quantities}")
+            return None
+    def get_product_quantities(self, store_id):
+        sql = f"""SELECT {self.table_products}.Product_ID, {self.table_products}.Name, {self.table_quantities}.Quantity 
+        FROM {self.table_products} INNER JOIN {self.table_quantities} 
+        ON {self.table_products}.Product_ID = {self.table_quantities}.Product_ID 
+        WHERE {self.table_quantities}.Store_ID = {store_id}
+        ;"""
+        
+        c=self.do_sql(sql)
+        result = c.fetchall()
+        if result is not None:
+            ""
+        else:
+            print(f"Warning: Query returned no results: <{sql}>")
+            return None
   
     """ 
     *********************************

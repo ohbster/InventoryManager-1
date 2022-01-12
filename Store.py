@@ -1,4 +1,6 @@
-class Store(object):
+import EntityBase
+
+class Store(EntityBase.EntityBase):
     def __init__(self, store_id=None, type=None, address=None):
         self.store_id = store_id
         self.type = type

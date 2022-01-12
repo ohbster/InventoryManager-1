@@ -1,4 +1,6 @@
-class Product(object):
+import EntityBase
+
+class Product(EntityBase.EntityBase):
     def __init__(self, product_id,name=None, image=None, description=None, msrp=None):
         self.product_id  = product_id
         self.name = name
@@ -26,8 +28,8 @@ class Product(object):
     
     #TODO: sanitize the inputs
     
-    def sanitize(self, arg):
-        return arg
+    #def sanitize(self, arg):
+    #    return arg
     
     """
     Setters
