@@ -20,6 +20,7 @@ import sqlite3
 import Product
 import Store
 import Quantity
+import ProductQuantity
 
 
 """
@@ -392,12 +393,8 @@ class Model:
         result = c.fetchall()
         if result is not None:
             for item in result:
-                
-                
-                #ROOT PROBLEM IS HERE!
+
                 quantity=self.tuple_to_quantity(item)
-                #print(f"***quantity.get_product_id ={quantity.get_product_id()}")
-                
                 
                 thisdict = {
                     f"{quantity.get_product_id()}" : quantity
@@ -407,8 +404,21 @@ class Model:
         else:
             print(f"Warning: No inventory available for Store_ID {_store_id} in tables {self.table_quantities}")
             return None
+        
+    def tuple_to_product_quantity(self, _tuple):
+        pq = ProductQuantity.ProductQuantity(product_id = _tuple[0],
+                                             name = _tuple[1],
+                                             image = _tuple[2],
+                                             description = _tuple[3],
+                                             msrp = _tuple[4], 
+                                             store_id = _tuple[5],
+                                             quantity = _tuple[6] )
+        return pq
+    
+    #Do i still need get_store_quantities?()    
     def get_product_quantities(self, store_id):
-        sql = f"""SELECT {self.table_products}.Product_ID, {self.table_products}.Name, {self.table_quantities}.Quantity 
+        sql = f"""SELECT {self.table_products}.Product_ID, {self.table_products}.Name, {self.table_products}.Image, 
+        {self.table_products}.Description, {self.table_products}.MSRP, {self.table_quantities}.Store_ID, {self.table_quantities}.Quantity 
         FROM {self.table_products} INNER JOIN {self.table_quantities} 
         ON {self.table_products}.Product_ID = {self.table_quantities}.Product_ID 
         WHERE {self.table_quantities}.Store_ID = {store_id}
@@ -417,7 +427,7 @@ class Model:
         c=self.do_sql(sql)
         result = c.fetchall()
         if result is not None:
-            ""
+            return list(map(lambda x: self.tuple_to_product_quantity(x), result))
         else:
             print(f"Warning: Query returned no results: <{sql}>")
             return None

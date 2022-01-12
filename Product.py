@@ -10,8 +10,10 @@ class Product(EntityBase.EntityBase):
     """
     Getters
     """
+    
+    #Maybe return 'None' if value is None
         
-    def get_id(self):
+    def get_product_id(self):
         return self.product_id
     
     def get_name(self):

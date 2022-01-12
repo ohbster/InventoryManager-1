@@ -5,8 +5,7 @@ import webbrowser
 import Product
 import Store
 import Quantity
-from _operator import lt
-
+import ProductQuantity
 
 class Dark_Theme(object):
     def __init__(self):                
@@ -99,7 +98,8 @@ class View(object):
         
         style.configure("Treeview",
             fieldbackground = bg_medium,
-            foreground = fg_default
+            foreground = fg_default,
+            background = bg_medium
             )
         
         style.configure("Treeview.Heading",
@@ -217,6 +217,7 @@ class InventoryTab(object):
         self.tab_frame = _parent
         
         #Store object will hold relevent info to the store tab
+        self.tv =  None
         self.store = Store.Store()
         self.store = store
         self.draw_tab(tab_control=tab_control,store=store)
@@ -252,7 +253,7 @@ class InventoryTab(object):
         #add_tab_btn.pack()
         
         """
-        Quantity on Hand Frame
+        Inventory Frame
         
         """
         header_frame = Frame(inventory_tab)
@@ -262,48 +263,44 @@ class InventoryTab(object):
         inventory_frame = Frame(inventory_tab)
         inventory_frame.pack(side=LEFT)
         
-        legend_labels = list()
-        qoh_labels = list()
+        self.tv = ttk.Treeview(inventory_frame)
+        self.tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
+        self.tv.column('#0', width=0, stretch=NO)
+        self.tv.column('Product ID', anchor=CENTER, width=80)
+        self.tv.column('Name', anchor=CENTER, width=80)
+        self.tv.column('Image', anchor=CENTER, width=80)
+        self.tv.column('Description', anchor=CENTER, width=80)
+        self.tv.column('MSRP', anchor=CENTER, width=80)
+        self.tv.column('Quantity on Hand', anchor=CENTER, width=80)
         
-        """
-        Legend
-        
-        """
-        """  
-        legend_labels.append(Label(inventory_frame, text='Product ID').grid(row=1, column=1, pady=1))
-        legend_labels.append(Label(inventory_frame, text='Name').grid(row=1, column=2))
-        legend_labels.append(Label(inventory_frame, text='Image').grid(row=1, column=3))
-        legend_labels.append(Label(inventory_frame, text='Description').grid(row=1, column=4))
-        legend_labels.append(Label(inventory_frame, text='MSRP').grid(row=1, column=5))
-        """
+        self.tv.heading('#0', text='', anchor=CENTER)
+        self.tv.heading('Product ID', text='Product ID', anchor=CENTER)
+        self.tv.heading('Name', text='Name', anchor=CENTER)
+        self.tv.heading('Image', text='Image', anchor=CENTER)
+        self.tv.heading('Description', text='Description', anchor=CENTER)
+        self.tv.heading('MSRP', text='MSRP', anchor=CENTER)
+        self.tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
         
         
-         #draw_lineitem()
-        tv = ttk.Treeview(inventory_frame)
-        tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
-        tv.column('#0', width=0, stretch=NO)
-        tv.column('Product ID', anchor=CENTER, width=80)
-        tv.column('Name', anchor=CENTER, width=80)
-        tv.column('Image', anchor=CENTER, width=80)
-        tv.column('Description', anchor=CENTER, width=80)
-        tv.column('MSRP', anchor=CENTER, width=80)
-        tv.column('Quantity on Hand', anchor=CENTER, width=80)
-        
-        tv.heading('#0', text='', anchor=CENTER)
-        tv.heading('Product ID', text='Product ID', anchor=CENTER)
-        tv.heading('Name', text='Name', anchor=CENTER)
-        tv.heading('Image', text='Image', anchor=CENTER)
-        tv.heading('Description', text='Description', anchor=CENTER)
-        tv.heading('MSRP', text='MSRP', anchor=CENTER)
-        tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
-        
-        tv.pack()
+        self.draw_inventory()
+        self.tv.pack()
         
         
     
-    def draw_inventory(self, parent):
+    def draw_inventory(self):
         
+        #myPQ = ProductQuantity.ProductQuantity(1,"test", "test.jpg", "This is a test", 12.00,1, 20 )
+        pq_list = self.controller.get_product_quantities(self.get_store_id())
+        for myPQ in pq_list:
         
+            self.tv.insert(parent='', index=0, iid=0, text='', values=(myPQ.get_product_id(),
+                                                                myPQ.get_name(),
+                                                                myPQ.get_image(),
+                                                                myPQ.get_description(),
+                                                                f'${myPQ.get_msrp():.2f}',
+                                                                myPQ.get_quantity()
+                                                                ))
+        self.tv.pack()
         x=2
        
         
