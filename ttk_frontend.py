@@ -106,6 +106,12 @@ class View(object):
             background = bg_medium,
             foreground = fg_default           
             )
+        
+        style.configure("Vertical.TScrollbar", 
+                        troughcolor=bg_medium,
+                        background=bg_medium,
+                        bordercolor=bg_medium
+                        )
     
     def set_controller(self, _controller):
         self.controller = _controller
@@ -129,7 +135,7 @@ class View(object):
        
         
         win.title('Inventory Manager')
-        win.geometry('600x200')
+        win.geometry('800x200')
         
         mn = Menu(win)
         win.config(menu=mn)
@@ -222,13 +228,8 @@ class InventoryTab(object):
         self.store = store
         self.draw_tab(tab_control=tab_control,store=store)
         #quantities = _parent.controller.get_quantities()
-        quantities = self.controller.get_store_quantities(store.store_id)
-        if len(quantities) < 1:
-            print(f"No quantities found")
-        else:
-            #print(f"get_store_quantities output: product_id {quantities['1'].get_product_id} : quantity  = {quantities['1'].get_quantity}")
-            print(f"get_store_quantities output: product_id = {quantities.get('1').get_product_id()}")
-        
+        #quantities = self.controller.get_store_quantities(store.store_id)
+                
         
         #TODO: Also need a list of the relevent products (Join the Quantity and Products Table where Product.Product_ID = Quanity.Product_ID
         
@@ -256,12 +257,11 @@ class InventoryTab(object):
         Inventory Frame
         
         """
-        header_frame = Frame(inventory_tab)
-        header_frame.pack()
-        
-        
+
         inventory_frame = Frame(inventory_tab)
-        inventory_frame.pack(side=LEFT)
+        inventory_frame.grid_columnconfigure(0, weight=1)
+        inventory_frame.grid_rowconfigure(0, weight=1)
+        inventory_frame.grid(row=0, column=0)
         
         self.tv = ttk.Treeview(inventory_frame)
         self.tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
@@ -280,13 +280,15 @@ class InventoryTab(object):
         self.tv.heading('Description', text='Description', anchor=CENTER)
         self.tv.heading('MSRP', text='MSRP', anchor=CENTER)
         self.tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
-        
-        
+
         self.draw_inventory()
-        self.tv.pack()
+        self.tv.grid(row=0, column=0, sticky='ew')
         
+        scrollbar_v = ttk.Scrollbar(inventory_frame, orient='vertical', command=self.tv.yview)
+        scrollbar_v.grid(row=0, column=1, sticky='ns')
         
-    
+        self.tv['yscrollcommand'] = scrollbar_v.set
+
     def draw_inventory(self):
         
         #myPQ = ProductQuantity.ProductQuantity(1,"test", "test.jpg", "This is a test", 12.00,1, 20 )
@@ -300,13 +302,10 @@ class InventoryTab(object):
                                                                 f'${myPQ.get_msrp():.2f}',
                                                                 myPQ.get_quantity()
                                                                 ))
-        self.tv.pack()
-        x=2
-       
-        
-        
-        
+        self.tv.grid(row=1, column=0)
+
         """
+        x=2
         _style = ""
         _bg =  ""
         

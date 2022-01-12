@@ -122,15 +122,10 @@ class Model:
         Description VARCHAR(500),
         Msrp REAL
         );''' 
-        
-        #TODO: This block of code appears twice. Try to create a function to 
-        #reuse it. Make it neater
-        try:
-            self.conn.execute(sql)
-            print(f"""Table "{self.table_products}" created""")
-        except sqlite3.IntegrityError as e:
-            print(e)
-        
+           
+        self.do_sql(sql)
+        print(f"""Table "{self.table_products}" created""")
+            
     def create_table_stores(self):
         sql = f""" CREATE TABLE IF NOT EXISTS {self.table_stores}
         (Store_ID INT PRIMARY KEY NOT NULL,
@@ -138,11 +133,9 @@ class Model:
         Address VARCHAR(200)
         );
          """
-        try:
-            self.conn.execute(sql)
-            print(f"""Table "{self.table_stores}" created""")
-        except sqlite3.IntegrityError as e:
-            print(e)
+        
+        self.do_sql(sql)
+        print(f"""Table "{self.table_stores}" created""")
         
     """
     TODO:cc
@@ -161,11 +154,10 @@ class Model:
         CONSTRAINT Product_Store_ID PRIMARY KEY (Product_ID, Store_ID)
         );'''
                     
-        try:
-            self.conn.execute(sql)
-            print(f"""Table "{self.table_quantities}"  created""")
-        except sqlite3.IntegrityError as e:
-            print(e)
+        
+        self.do_sql(sql)
+        print(f"""Table "{self.table_quantities}"  created""")
+        
         
     """
     *********************************
@@ -189,12 +181,11 @@ class Model:
         VALUES  ({_product_id},"{_name}","{_image}","{_desc}", {_msrp});"""
         
         print(f'Attempting: {sql}')
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print("Product Created!")
-        except sqlite3.IntegrityError as e:
-            print(e)
+
+        self.do_sql(sql)
+        self.conn.commit()
+        print("Product Created!")
+
 
     #def createProduct():
     
@@ -209,12 +200,11 @@ class Model:
         VALUES
         ({_store_id}, "{_type}", "{_address}")
         ;"""
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print("Store Created!")
-        except sqlite3.IntegrityError as e:
-            print(e)
+ 
+        self.do_sql(sql)
+        self.conn.commit()
+        print("Store Created!")
+
                 
     def add_quantity(self,_product_id=None, _store_id=None, _quantity=None):
         #sanitize the arguments
@@ -228,13 +218,11 @@ class Model:
         ({_product_id}, {_store_id}, {_quantity})
         ;"""
         
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print("Quantity created")
-        except sqlite3.IntegrityError as e:
-            print(e)     
-    
+
+        self.do_sql(sql)
+        self.conn.commit()
+        print("Quantity created")
+   
     """
     Conversion functions
     """ 
@@ -288,23 +276,17 @@ class Model:
     #possibly make this into a static method as  it doesn't alter state of instance
     def get_products(self):
         sql = f"""SELECT * FROM Products; """
-        try:
-                c=self.conn.execute(sql)
-                result = c.fetchall()
-                #print(result)
-                
-                if result is not None:
-                    #return self.tuple_to_dict(result)
-                    #return list(map(lambda x: self.tuple_to_dict(x), result))
-                    return list(map(lambda x: self.tuple_to_product(x), result))
-                
-        except sqlite3.IntegrityError as e:
-            print(e)
+
+        c=self.do_sql(sql)
+        result = c.fetchall()
+
+        if result is not None:
+            return list(map(lambda x: self.tuple_to_product(x), result))
             
     def get_product(self, _product_id):
         sql = f"""SELECT * FROM Products
         WHERE Product_ID = {_product_id}; """
-        c=self.conn.execute(sql)
+        c=self.do_sql(sql)
         result = c.fetchone()
         if result is not None:
             #return self.tuple_to_dict(result)
@@ -323,7 +305,7 @@ class Model:
     def get_store(self, _store_id):
         sql = f"""SELECT * FROM Stores
         WHERE Store_ID = {_store_id};  """
-        c=self.conn.execute(sql)
+        c=self.do_sql(sql)
         result = c.fetchone()
         if result is not None:
             return self.tuple_to_store(result)
@@ -352,12 +334,8 @@ class Model:
         ; """
         if(_product_id is not None) and (_store_id is not None):
         
-            try:
-                c=self.conn.execute(sql)
-                result = c.fetchone()
-                
-            except sqlite3.IntegrityError as e:
-                print(e)
+            c=self.do_sql(sql)
+            result = c.fetchone()
                 
             if result is not None:
                 return self.tuple_to_quantity(result)
@@ -449,14 +427,11 @@ class Model:
         sql = f"""UPDATE {self.table_products}
         SET Name = "{_name}", Image = "{_image}", Description = "{_desc}", MSRP = {_msrp}
         WHERE Product_ID = {_id}; """
-        
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print(f"Product {_id} updated!")
-         
-        except sqlite3.OperationalError as e:
-            print(e)
+
+        self.do_sql(sql)
+        self.conn.commit()
+        print(f"Product {_id} updated!")
+
         
     
     """
@@ -473,14 +448,11 @@ class Model:
         SET Quantity = {_quantity}
         WHERE Product_ID = {_product_id} AND Store_ID = {_store_id};"""
         
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print(f"Quantity updated!")
-        
-        except sqlite3.OperationalError as e:
-            print(e)
-    
+
+        self.do_sql(sql)
+        self.conn.commit()
+        print(f"Quantity updated!")
+
     """
     *********************************
     DELETE
@@ -495,12 +467,11 @@ class Model:
         #_id = self.scrub(_id)
         sql = f"""DELETE FROM {self.table_products}
         WHERE Product_ID = {_id};"""
-        try:
-            self.conn.execute(sql)
-            self.conn.commit()
-            print(f"Deleted product {_id}")
-        except sqlite3.OperationalError as e:
-            print(e)
+
+        self.do_sql(sql)
+        self.conn.commit()
+        print(f"Deleted product {_id}")
+
             
     #TDDO: Delete Store
     #TODO: Delete Quantity
@@ -528,62 +499,4 @@ class Model:
 Testing Area
 *****************
 """
-
-myModel = Model()
-myModel.add_product("1", "ankh", "ankh.jpg", "this is an ankh", "12.00")
-myModel.add_product("2", "africa", "africa.jpg", "this is an african pendant", "13.00")
-
-myModel.add_store("1", "Products on Hand", "123 Small Business ave.")
-myModel.add_store("2", "Amazon FBA", "http://www.amazon.com/selers/Mystore")
-myModel.add_store("3", "Etsy Store", "http://www.etsy.com/myStore")
-
-myModel.add_quantity(1, 1, 20)
-#myModel.add_quantity(1, 2, 10)
-
-"""
-products= myModel.get_products()
-print("Listing Products")
-print(products)
-product= myModel.get_product(1)
-print(product)
-product= myModel.get_product(999)
-product= myModel.get_product(2)
-print(product)
-myModel.delete_product(1)
-products = myModel.get_products()
-print(products)
-myModel.set_product("2","myAfrica", "myAfrica.jpg", "This is myAfrica", "12.01")
-products = myModel.get_products()
-print(products)
-"""
-product = myModel.get_product(1)
-#product.get_name
-print(product.get_name())
-print(product.get_image())
-
-store = myModel.get_store(1)
-print(store.get_type())
-print(store.get_address())
-
-quantity = myModel.get_quantity(1,1)
-print(f"""My Quantity is {quantity.get_quantity()}""")
-myModel.set_quantity(1,1,30)
-
-print(f"""My new quantity is {quantity.get_quantity()}""")
-print("********* Product List creation *******")
-product_list = myModel.get_products()
-for x in product_list:
-    print (x.get_name())
-
-print("********* Store List creation *******")    
-store_list = myModel.get_stores()
-for x in store_list:
-    print(x.get_type())
-    
-print("********* Quantity List creation *******")
-quantity_list = myModel.get_quantities()
-#for x in quantity_list:
-    #print(f"{x.get_product_id()},{x.get_store_id()} = {x.get_quantity()}")
-for x in quantity_list:
-    print(f"(Product, Store):{myModel.get_product(x.get_product_id()).get_name()},{myModel.get_store(x.get_store_id()).get_type()}:  {x.get_quantity()} in stock")
 

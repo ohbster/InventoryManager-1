@@ -16,8 +16,7 @@ class App(Tk):
         controller = Controller(_model=model,_view=view)
         view.set_controller(controller)
         view.draw_main()
-        
-        
+
 if __name__ == '__main__':
     app = App()
     app.mainloop()

@@ -6,6 +6,8 @@ class Quantity(EntityBase.EntityBase):
         self.store_id = store_id
         self.quantity = quantity
         
+        #TODO: include and active bit to enable deactivating listings per stores
+        
     """
     Getters
     """
@@ -23,6 +25,7 @@ class Quantity(EntityBase.EntityBase):
     """
     def set_quantity(self, _quantity):
         self.quantity = self.sanitize(_quantity) 
+        
         
 
 
