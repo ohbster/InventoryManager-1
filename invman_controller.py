@@ -5,11 +5,23 @@ class Controller(object):
         self.model = _model
         self.view = _view
     
-    def show_products(self):
+    def draw_inventory(self):
         products = self.model.get_product()
-        self.view.show_products()
+        self.view.draw_inventory()
         
     def show_product(self, _product_id):
         item = self.model.get_item(_product_id)
-        self.view.show_products()
-       
+        self.view.draw_inventory()
+        
+    def get_store(self, store_id):
+        store = self.model.get_store(store_id)
+        return store
+    
+    def get_stores(self):
+        return self.model.get_stores()
+    
+    def get_quantities(self):
+        return self.model.get_quantities()
+
+    def get_store_quantities(self, _store_id):
+        return self.model.get_store_quantities(_store_id)

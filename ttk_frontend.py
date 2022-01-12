@@ -5,6 +5,7 @@ import webbrowser
 import Product
 import Store
 import Quantity
+from _operator import lt
 
 
 class Dark_Theme(object):
@@ -13,9 +14,9 @@ class Dark_Theme(object):
         Color scheme
         
         """
-        bg_dark='#2f2f2f'
-        bg_medium='#373737'
-        fg_default='#ffffff'
+        self.bg_dark='#2f2f2f'
+        self.bg_medium='#373737'
+        self.fg_default='#ffffff'
         
 
 class View(object):
@@ -23,16 +24,19 @@ class View(object):
     def __init__ (self, root=None, controller=None): #Pass the controller as an argument?
         
         if root is None:
-            win=Tk()
+            self.parent=Tk()
         else:
-            win = root
+            self.parent = root
+        
+        win = self.parent
         
         """***********************
         MVC Stuff goes here
         
         ***********************
         """
-        _controller = controller
+        self.controller = controller
+        #self.set_controller(controller)
         
         """
         ***********************
@@ -41,8 +45,7 @@ class View(object):
         ***********************       
         
         """    
-       
-        
+              
         common_theme = Dark_Theme()
         bg_dark = common_theme.bg_dark
         bg_medium = common_theme.bg_medium
@@ -94,14 +97,35 @@ class View(object):
         style.configure("TFrame", 
             background = bg_medium)
         
+        style.configure("Treeview",
+            fieldbackground = bg_medium,
+            foreground = fg_default
+            )
         
+        style.configure("Treeview.Heading",
+            background = bg_medium,
+            foreground = fg_default           
+            )
+    
+    def set_controller(self, _controller):
+        self.controller = _controller
+    
+    def callback(self, url):
+        webbrowser.open_new_tab(url)
         
+    def draw_main(self):
+        
+        common_theme = Dark_Theme()
+        bg_dark = common_theme.bg_dark
+        bg_medium = common_theme.bg_medium
+        fg_default = common_theme.fg_default
         
         """
         ***********************************
-        This will go to the main app class
+        Create the menus
         ***********************************
         """
+        win = self.parent
        
         
         win.title('Inventory Manager')
@@ -133,139 +157,222 @@ class View(object):
         help_menu.add_command(label='Feedback')
         help_menu.add_command(label='Contact')
         
-        #create a frame to hold the tabs
-        tab_frame = Frame(win)
-        tab_frame.pack(fill='x')
         
-           
-        win.mainloop()
-    
-    def set_controller(self, _controller):
-        self.controller = _controller
-    
-    def callback(self, url):
-        webbrowser.open_new_tab(url)
-    
+        """
+        *********************************
+        Create the tab
+        *********************************
+        """
+        
+        #create a frame to hold the tabs
+        self.tab_frame = Frame(win)
+        self.tab_frame.pack(fill='x')
+        
+        #TODO
+        #StoreDialog(win,self.__controller).draw()
+        #InventoryTab.draw(win, self.__controller)
+        
+         
+        #code to draw all the tabs
+        self.tab_control=ttk.Notebook(self.tab_frame)
+        storeList = self.controller.get_stores() #Get a list of store objects, sourced from database
+        
+        
+        #for every store in the Store table, create a seperate tab
+        for store in storeList:
+            InventoryTab(controller = self.controller, _parent = self.tab_frame,tab_control=self.tab_control,store=store)
+            
+            #the StoreTab object will use the 'store' object being passed to query the
+            #Quantities and Product tables for data on each store respectively
+            
+        
+        
+        #InventoryTab(self.tab_frame,tab_control=self.tab_control,store=myStore)
+        #InventoryTab(self.tab_control,myStore)
+
+"""
+Dialogs
+"""
+class StoreDialog(Tk):
+    def __init__(self, parent, controller):
+        
+        __controller = controller
+        self.__parent = parent
+
+    #this needs to be in the main window, not here
+    def draw(self):
+        win = Tk()
+        win.title("Select Store(s)")
+        win.geometry('600x200')
+
     """
     Tabs
     """
     
-    class StoreTabs(object):
-        def __init__(self,_parent):
-            self.tabframe = _parent
-        #tabs
+#TODO: Change this to InventoryTab instead
+class InventoryTab(object):
+    def __init__(self,controller, _parent,tab_control, store):
+        #controller is needed to interact with back end (update and retrieve database records, etc)
+        self.controller = controller
+        self.tab_frame = _parent
         
-        def draw_tab(self, _store_id = None):
-            tab_control=ttk.Notebook(self.tab_frame)
-            inventory_tab = ttk.Frame(tab_control)
-            amazon_tab = ttk.Frame(tab_control)
-            etsy_tab = ttk.Frame(tab_control)
-            
-            tab_control.add(inventory_tab,text='Inventory')
-            tab_control.add(amazon_tab,text='Amazon Inventory')
-            tab_control.add(etsy_tab,text='Etsy Inventory')
-            
-            tab_control.pack(expand=1, fill='both',side=LEFT)
-            
-            #add a button to optionally add more tabs
-            #add_tab_btn = ttk.Button(tab_frame, text="+")
-            #add_tab_btn.pack()
-            
-            """
-            Quantity on Hand Frame
-            
-            """
-            
-            product_list = dict()
-            product_list['Product_ID'] = 1
-            product_list['Name'] = 'ankh'
-            product_list['Image'] = 'ankh.jpg'
-            product_list['Description'] = "This is a 25mm ankh piece"
-            product_list['MSRP'] = 12.00
-            
-            qoh_frame = Frame(inventory_tab)
-            qoh_frame.pack(side=LEFT)
-            
-            qoh_labels = list()
-            """
-            Legend
-            
-            """
-            
-            """
-            qoh_labels.append(Label(qoh_frame, text='Product ID').grid(row=1, column=1, pady=1))
-            qoh_labels.append(Label(qoh_frame, text='Name').grid(row=1, column=2))
-            qoh_labels.append(Label(qoh_frame, text='Image').grid(row=1, column=3))
-            qoh_labels.append(Label(qoh_frame, text='Description').grid(row=1, column=4))
-            qoh_labels.append(Label(qoh_frame, text='MSRP').grid(row=1, column=5))
-            """
-            
-            #2
-        def show_products(self, _count):
-            
-            
-            x=2
-            """
-            _style = ""
-            _bg =  ""
-            for x in range(_count):
-                #alternate between a dark and light color to make the list easier to read
-                
-                if x % 2 != 0:
-                    _style = "dark.TFrame"
-                    _bg = bg_dark
-                    
-                    
-                else :
-                   _style = "TFrame"
-                   _bg = bg_medium
-                
-                #print(_style)
-                qoh_labels.append(Frame(qoh_frame, style=_style))
-                qoh_labels[-1].grid(row=x, column=1, columnspan = 5)
-                #qoh_labels[-1].grid_propagate(0)
-                
-                text1 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-                text1.grid(row=x,column=1, ipadx=5, padx=0)
-                text1.insert(0.0, x)
-                text1["state"] = DISABLED
-                
-                text2 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-                text2.grid(row=x,column=2, ipadx=5, padx=0)
-                text2.insert(0.0, 'field 2')
-                text2["state"] = DISABLED
-                
-                text3 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-                text3.grid(row=x,column=3, ipadx=5, padx=0)
-                text3.insert(0.0, 'field 3')
-                text3["state"] = DISABLED
-                
-                text4 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-                text4.grid(row=x,column=4, ipadx=5, padx=0)
-                text4.insert(0.0, 'field 4')
-                text4["state"] = DISABLED
-                
-                text5 = Entry(qoh_labels[-1],  width=15)
-                text5.grid(row=x,column=5, ipadx=5, padx=0)
-                text5.insert(INSERT,'field 5')
-                #text5["state"] = DISABLED
-                
-                print(qoh_labels[-1].winfo_children())
+        #Store object will hold relevent info to the store tab
+        self.store = Store.Store()
+        self.store = store
+        self.draw_tab(tab_control=tab_control,store=store)
+        #quantities = _parent.controller.get_quantities()
+        quantities = self.controller.get_store_quantities(store.store_id)
+        if len(quantities) < 1:
+            print(f"No quantities found")
+        else:
+            #print(f"get_store_quantities output: product_id {quantities['1'].get_product_id} : quantity  = {quantities['1'].get_quantity}")
+            print(f"get_store_quantities output: product_id = {quantities.get('1').get_product_id()}")
         
-        show_products(10)"""
         
-    """
-    TODO: Consider using labelFrame in order to highlight each row to make it easier
-    to read
-    """
+        #TODO: Also need a list of the relevent products (Join the Quantity and Products Table where Product.Product_ID = Quanity.Product_ID
+        
+        
+    def get_store_id(self):
+        return self.store.get_store_id()
+    #tabs
+    def draw(self, parent):
+        self.__parent = parent
+        
+    #TODO: the notebook code belongs to the main window with the menues
+    def draw_tab(self, tab_control=None, store = None):
+        
+        inventory_tab = ttk.Frame(tab_control)
+        
+        tab_control.add(inventory_tab,text=self.store.get_type())
+        
+        tab_control.pack(expand=1, fill='both',side=LEFT)
+        
+        #add a button to optionally add more tabs
+        #add_tab_btn = ttk.Button(tab_frame, text="+")
+        #add_tab_btn.pack()
+        
+        """
+        Quantity on Hand Frame
+        
+        """
+        header_frame = Frame(inventory_tab)
+        header_frame.pack()
+        
+        
+        inventory_frame = Frame(inventory_tab)
+        inventory_frame.pack(side=LEFT)
+        
+        legend_labels = list()
+        qoh_labels = list()
+        
+        """
+        Legend
+        
+        """
+        """  
+        legend_labels.append(Label(inventory_frame, text='Product ID').grid(row=1, column=1, pady=1))
+        legend_labels.append(Label(inventory_frame, text='Name').grid(row=1, column=2))
+        legend_labels.append(Label(inventory_frame, text='Image').grid(row=1, column=3))
+        legend_labels.append(Label(inventory_frame, text='Description').grid(row=1, column=4))
+        legend_labels.append(Label(inventory_frame, text='MSRP').grid(row=1, column=5))
+        """
+        
+        
+         #draw_lineitem()
+        tv = ttk.Treeview(inventory_frame)
+        tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
+        tv.column('#0', width=0, stretch=NO)
+        tv.column('Product ID', anchor=CENTER, width=80)
+        tv.column('Name', anchor=CENTER, width=80)
+        tv.column('Image', anchor=CENTER, width=80)
+        tv.column('Description', anchor=CENTER, width=80)
+        tv.column('MSRP', anchor=CENTER, width=80)
+        tv.column('Quantity on Hand', anchor=CENTER, width=80)
+        
+        tv.heading('#0', text='', anchor=CENTER)
+        tv.heading('Product ID', text='Product ID', anchor=CENTER)
+        tv.heading('Name', text='Name', anchor=CENTER)
+        tv.heading('Image', text='Image', anchor=CENTER)
+        tv.heading('Description', text='Description', anchor=CENTER)
+        tv.heading('MSRP', text='MSRP', anchor=CENTER)
+        tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
+        
+        tv.pack()
+        
+        
     
-    """
-    Create a color scheme for the rows of the table
-    Alternate between light and bg_dark to make it easier to read
-    Have a Light and Dark warning color
-    And a Light and Dark alert color
-    Alternate between odd and even rows on the table.
+    def draw_inventory(self, parent):
+        
+        
+        x=2
+       
+        
+        
+        
+        """
+        _style = ""
+        _bg =  ""
+        
+        for x in range(_count):
+            #alternate between a dark and light color to make the list easier to read
+            
+            if x % 2 != 0:
+                _style = "dark.TFrame"
+                _bg = self.bg_dark
+                
+                
+            else :
+               _style = "TFrame"
+               _bg = self.bg_medium
+            
+            #print(_style)
+            qoh_labels.append(Frame(qoh_frame, style=_style))
+            qoh_labels[-1].grid(row=x, column=1, columnspan = 5)
+            #qoh_labels[-1].grid_propagate(0)
+            
+            text1 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
+            text1.grid(row=x,column=1, ipadx=5, padx=0)
+            text1.insert(0.0, x)
+            text1["state"] = DISABLED
+            
+            text2 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
+            text2.grid(row=x,column=2, ipadx=5, padx=0)
+            text2.insert(0.0, 'field 2')
+            text2["state"] = DISABLED
+            
+            text3 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
+            text3.grid(row=x,column=3, ipadx=5, padx=0)
+            text3.insert(0.0, 'field 3')
+            text3["state"] = DISABLED
+            
+            text4 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
+            text4.grid(row=x,column=4, ipadx=5, padx=0)
+            text4.insert(0.0, 'field 4')
+            text4["state"] = DISABLED
+            
+            text5 = Entry(qoh_labels[-1],  width=15)
+            text5.grid(row=x,column=5, ipadx=5, padx=0)
+            text5.insert(INSERT,'field 5')
+            #text5["state"] = DISABLED
+            
+            print(qoh_labels[-1].winfo_children())
     
-    """
- 
+    #draw_inventory(10)"""
+    def draw_lineitem(self,parent=None,quantity=None):
+        ""
+    
+"""
+TODO: Consider using labelFrame in order to highlight each row to make it easier
+to read
+"""
+
+"""
+Create a color scheme for the rows of the table
+Alternate between light and bg_dark to make it easier to read
+Have a Light and Dark warning color
+And a Light and Dark alert color
+Alternate between odd and even rows on the table.
+
+"""
+
            

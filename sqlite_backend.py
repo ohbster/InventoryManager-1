@@ -365,7 +365,7 @@ class Model:
             
             #return    
         else:
-            print(f"Error: get_quantity(product_id={_product_id},store_id={_store_id})")
+            print(f"Error Missing Arguements: get_quantity(product_id={_product_id},store_id={_store_id})")
             
     def get_quantities(self):
         sql = f"""SELECT * FROM {self.table_quantities} ; """
@@ -375,6 +375,37 @@ class Model:
             return list(map(lambda x: self.tuple_to_quantity(x), result))
         else:
             print(f"Warning: No quantity found in table, {self.table_quantities}")
+            
+    #return a dictionary of all product, quantity pairs in the Quantity table, using product_id as index            
+    
+    
+    #create a new function to create a dict from the get_quantities function
+    def get_store_quantities(self, _store_id):
+        sql = f"""SELECT * 
+        FROM {self.table_quantities} 
+        WHERE Store_ID = {_store_id}
+        ;
+        """
+        quantity=Quantity.Quantity()
+        thisdict={}
+        c = self.do_sql(sql)
+        result = c.fetchall()
+        if result is not None:
+            for item in result:
+                
+                
+                #ROOT PROBLEM IS HERE!
+                quantity=self.tuple_to_quantity(item)
+                #print(f"***quantity.get_product_id ={quantity.get_product_id()}")
+                
+                
+                thisdict = {
+                    f"{quantity.get_product_id()}" : quantity
+                                        
+                    }
+            return thisdict
+        else:
+            print(f"Warning: No inventory available for Store_ID {_store_id} in tables {self.table_quantities}")
   
     """ 
     *********************************
