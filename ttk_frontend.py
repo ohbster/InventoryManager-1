@@ -345,8 +345,16 @@ class InventoryTab(object):
         
         field_width = 30
         
-        def callback():
-            filename = fd.askopenfilename()
+        def open_image():
+            filetypes = (
+                ('jpeg files', '*.jpg'),
+                ('gif files', '*.gif'),
+                ('All files', '*Allfile*')
+            )
+            filename = fd.askopenfilename(
+                title = 'open image',
+                filetypes = filetypes
+                )
             print(filename)
             image_entry.insert(INSERT, filename)
             
@@ -401,7 +409,7 @@ class InventoryTab(object):
         image_entry = Entry(newWindow, width = field_width)
         image_entry.grid(row = 5, column = 1)
         
-        image_btn = Button(newWindow, text = 'Open Image', command=callback)
+        image_btn = Button(newWindow, text = 'Open Image', command=open_image)
         image_btn.grid(row = 5, column = 2)
         
         submit_btn = Button(newWindow, text = 'Submit')
