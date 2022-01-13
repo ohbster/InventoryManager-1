@@ -6,6 +6,9 @@ import Product
 import Store
 import Quantity
 import ProductQuantity
+from tkinter import filedialog as fd
+
+
 
 class Dark_Theme(object):
     def __init__(self):                
@@ -13,9 +16,11 @@ class Dark_Theme(object):
         Color scheme
         
         """
+        self.bg_light='#767676'
         self.bg_dark='#2f2f2f'
         self.bg_medium='#373737'
-        self.fg_default='#ffffff'
+        self.fg_default='#dddddd'
+       
         
 
 class View(object):
@@ -46,6 +51,7 @@ class View(object):
         """    
               
         common_theme = Dark_Theme()
+        bg_light = common_theme.bg_light
         bg_dark = common_theme.bg_dark
         bg_medium = common_theme.bg_medium
         fg_default = common_theme.fg_default
@@ -108,9 +114,16 @@ class View(object):
             )
         
         style.configure("Vertical.TScrollbar", 
-                        troughcolor=bg_medium,
-                        background=bg_medium,
-                        bordercolor=bg_medium
+                        troughcolor = bg_medium,
+                        background = bg_medium,
+                        bordercolor = bg_medium
+                        )
+        style.configure("TButton",
+                        background = bg_medium,
+                        foreground = fg_default
+                        #lightcolor = bg_light,
+                        #darkcolor = bg_dark,
+                        #focuscolor = bg_light
                         )
     
     def set_controller(self, _controller):
@@ -133,13 +146,11 @@ class View(object):
         """
         win = self.parent
        
-        
         win.title('Inventory Manager')
         win.geometry('800x200')
         
         mn = Menu(win)
         win.config(menu=mn)
-        #win.configure(bg=bg_medium)
         
         win.tk_setPalette(background=bg_medium, foreground=fg_default, activeBackground=bg_dark, activeForeground=fg_default)
         
@@ -162,8 +173,7 @@ class View(object):
         mn.add_cascade(label='Help', menu=help_menu)
         help_menu.add_command(label='Feedback')
         help_menu.add_command(label='Contact')
-        
-        
+           
         """
         *********************************
         Create the tab
@@ -176,8 +186,7 @@ class View(object):
         
         #TODO
         #StoreDialog(win,self.__controller).draw()
-        #InventoryTab.draw(win, self.__controller)
-        
+        #InventoryTab.draw(win, self.__controller)     
          
         #code to draw all the tabs
         self.tab_control=ttk.Notebook(self.tab_frame)
@@ -190,12 +199,6 @@ class View(object):
             
             #the StoreTab object will use the 'store' object being passed to query the
             #Quantities and Product tables for data on each store respectively
-            
-        
-        
-        #InventoryTab(self.tab_frame,tab_control=self.tab_control,store=myStore)
-        #InventoryTab(self.tab_control,myStore)
-
 """
 Dialogs
 """
@@ -228,12 +231,10 @@ class InventoryTab(object):
         self.store = store
         self.draw_tab(tab_control=tab_control,store=store)
         #quantities = _parent.controller.get_quantities()
-        #quantities = self.controller.get_store_quantities(store.store_id)
-                
+        #quantities = self.controller.get_store_quantities(store.store_id)        
         
         #TODO: Also need a list of the relevent products (Join the Quantity and Products Table where Product.Product_ID = Quanity.Product_ID
-        
-        
+               
     def get_store_id(self):
         return self.store.get_store_id()
     #tabs
@@ -288,6 +289,39 @@ class InventoryTab(object):
         scrollbar_v.grid(row=0, column=1, sticky='ns')
         
         self.tv['yscrollcommand'] = scrollbar_v.set
+        
+        """
+        Right Side Panel
+        
+        """
+        panel_frame = ttk.Frame(inventory_frame)
+        panel_frame.grid(row=0, column=2, sticky='ns')
+        
+        """
+        Buttons
+        """
+        
+        #used to create a new product and add to inventory
+        new_btn = Button(panel_frame, text = 'New Product', width=15)
+        #new_btn.grid(row=0, column=2)
+        new_btn.bind("<Button>", lambda e:  self.openNewWindow(inventory_tab))
+        new_btn.pack(ipadx = 7)
+        
+        #used to add a product to current inventory
+        add_btn = Button(panel_frame, text = 'Add Inventory', width = 15)
+        add_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        
+        add_btn.pack(ipadx = 7)
+        
+        #Update the quantity of selected product
+        update_btn = Button(panel_frame, text = 'Update', width=15)
+        update_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        update_btn.pack(ipadx = 7)
+        
+        #Redraw the inventory_frame
+        refresh_btn = Button(panel_frame, text = 'Refresh', width=15)
+        refresh_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        refresh_btn.pack(ipadx = 7)    
 
     def draw_inventory(self):
         
@@ -303,65 +337,102 @@ class InventoryTab(object):
                                                                 myPQ.get_quantity()
                                                                 ))
         self.tv.grid(row=1, column=0)
-
-        """
-        x=2
-        _style = ""
-        _bg =  ""
+    
+    def openNewWindow(self, parent):
+        newWindow = Toplevel(parent)
+        newWindow.title("Add a new product")
+        newWindow.geometry("500x200")
         
-        for x in range(_count):
-            #alternate between a dark and light color to make the list easier to read
+        field_width = 30
+        
+        def callback():
+            filename = fd.askopenfilename()
+            print(filename)
+            image_entry.insert(INSERT, filename)
             
-            if x % 2 != 0:
-                _style = "dark.TFrame"
-                _bg = self.bg_dark
-                
-                
-            else :
-               _style = "TFrame"
-               _bg = self.bg_medium
+        def submit():
+            #store the data to a new ProductQuantity object, and tell let 
+            #the object do the hard work of sanitizing and adding
+            pq = ProductQuantity(product_id = pid_entry.get(),
+                                 name = name_entry.get(),
+                                 image = image_entry.get(),
+                                 description = description_entry.get(),
+                                 msrp = msrp_entry.get(),
+                                 store_id = self.get_store_id(),
+                                 quantity = quantity_entry.get()
+                                 )
             
-            #print(_style)
-            qoh_labels.append(Frame(qoh_frame, style=_style))
-            qoh_labels[-1].grid(row=x, column=1, columnspan = 5)
-            #qoh_labels[-1].grid_propagate(0)
             
-            text1 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-            text1.grid(row=x,column=1, ipadx=5, padx=0)
-            text1.insert(0.0, x)
-            text1["state"] = DISABLED
-            
-            text2 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-            text2.grid(row=x,column=2, ipadx=5, padx=0)
-            text2.insert(0.0, 'field 2')
-            text2["state"] = DISABLED
-            
-            text3 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-            text3.grid(row=x,column=3, ipadx=5, padx=0)
-            text3.insert(0.0, 'field 3')
-            text3["state"] = DISABLED
-            
-            text4 = Text(qoh_labels[-1], bg=_bg, height=1, bd=0, width=15, highlightthickness=0)
-            text4.grid(row=x,column=4, ipadx=5, padx=0)
-            text4.insert(0.0, 'field 4')
-            text4["state"] = DISABLED
-            
-            text5 = Entry(qoh_labels[-1],  width=15)
-            text5.grid(row=x,column=5, ipadx=5, padx=0)
-            text5.insert(INSERT,'field 5')
-            #text5["state"] = DISABLED
-            
-            print(qoh_labels[-1].winfo_children())
-    
-    #draw_inventory(10)"""
-    def draw_lineitem(self,parent=None,quantity=None):
-        ""
-    
-"""
-TODO: Consider using labelFrame in order to highlight each row to make it easier
-to read
-"""
+            #print(pid_entry.get())
+        
+        pid_label = Label(newWindow, text = 'Enter Product ID')
+        pid_label.grid(row = 0, column = 0)
+        
+        pid_entry = Entry(newWindow, width = field_width)
+        pid_entry.grid(row = 0, column = 1)
+        
+        name_label = Label(newWindow, text = 'Enter Name')
+        name_label.grid(row = 1, column = 0)
+        
+        name_entry = Entry(newWindow, width = field_width)
+        name_entry.grid(row = 1, column = 1)
+        
+        description_label = Label(newWindow, text = 'Enter a short description')
+        description_label.grid(row = 2, column = 0)
+        
+        description_entry = Entry(newWindow, width = field_width)
+        description_entry.grid(row = 2, column = 1)
+        
+        msrp_label = Label(newWindow, text = 'MSRP')
+        msrp_label.grid(row = 3, column = 0)
+        
+        msrp_entry = Entry(newWindow, width = field_width)
+        msrp_entry.grid(row = 3, column = 1)
+        
+        quantity_label = Label(newWindow, text = 'Enter Quantity')
+        quantity_label.grid(row = 4, column = 0)
+        
+        quantity_entry = Entry(newWindow, width = field_width)
+        quantity_entry.grid(row = 4, column = 1)
+        
+        image_label = Label(newWindow, text = 'Select Product Image')
+        image_label.grid(row = 5, column = 0)
+        
+        image_entry = Entry(newWindow, width = field_width)
+        image_entry.grid(row = 5, column = 1)
+        
+        image_btn = Button(newWindow, text = 'Open Image', command=callback)
+        image_btn.grid(row = 5, column = 2)
+        
+        submit_btn = Button(newWindow, text = 'Submit')
+        
+        #submit_btn.bind('<Return>', lambda e: self.submit())
+        submit_btn.bind('<Button>', lambda e: self.openInProgress(newWindow))
+        submit_btn.grid(row = 6, column = 1)
 
+
+    """ 
+    List all available products in the Products table and allow user to add some to their inventory
+    If item is already in inventory, add to it
+    """
+    def openAddWindow(self,parent):
+        addWindow = Toplevel(parent)
+        addWindow.title('Add to Inventory')
+        addWindow.geometry('500x300')
+        
+    def openInProgress(self, parent):
+        inProgress = Toplevel(parent)
+        inProgress.title('This feature is not yet available')
+        inProgress.geometry('300x100')
+        
+        label = Label(inProgress, text='This feature is under construction.')
+        label.pack(pady=5)
+        label2 = Label(inProgress, text = 'Please check back as I am usually updating')
+        label2.pack(pady=5)
+        
+        closeBtn = Button(inProgress, text = 'Close', command = inProgress.destroy)
+        closeBtn.pack(pady = 5)
+        #closeBtn.bind('<Return>', lambda e: )
 """
 Create a color scheme for the rows of the table
 Alternate between light and bg_dark to make it easier to read
