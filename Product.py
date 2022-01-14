@@ -1,17 +1,16 @@
 import EntityBase
 
 class Product(EntityBase.EntityBase):
-    def __init__(self, product_id,name=None, image=None, description=None, msrp=None):
-        self.product_id  = product_id
-        self.name = name
-        self.image = image
-        self.description = description
-        self.msrp = msrp
+    def __init__(self, product_id, name=None, image=None, description=None, msrp=None):
+        self.set_product_id(product_id)
+        self.set_name(name)
+        self.set_image(image)
+        self.set_description(description)
+        self.set_msrp(msrp)
+        
     """
     Getters
     """
-    
-    #Maybe return 'None' if value is None
         
     def get_product_id(self):
         return self.product_id
@@ -27,17 +26,13 @@ class Product(EntityBase.EntityBase):
     
     def get_msrp(self):
         return self.msrp
-    
-    #TODO: sanitize the inputs
-    
-    #def sanitize(self, arg):
-    #    return arg
+
     
     """
     Setters
     """
     
-    def set_id(self, product_id):
+    def set_product_id(self, product_id):
         self.product_id = self.sanitize(product_id)
         
     def set_name(self,name):

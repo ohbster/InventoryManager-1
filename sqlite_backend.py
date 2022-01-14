@@ -168,17 +168,17 @@ class Model:
     """
     #To create new products you will need to create the product tuple, and the qoh
     #tuple seperately
-    def add_product(self,_product_id=None, _name=None, _image=None, _desc=None, _msrp=None):
+    def add_product(self,product_id=None, name=None, image=None, description=None, msrp=None):
         
-        _product_id = self.scrub(_product_id)
-        _name =  self.scrub(_name)
-        _image = self.scrub(_image)
-        _desc = self.scrub(_desc)
-        _msrp = self.scrub(_msrp)
+        product_id = self.scrub(product_id)
+        name =  self.scrub(name)
+        image = self.scrub(image)
+        description = self.scrub(description)
+        msrp = self.scrub(msrp)
         #what about real numbers? need to allow '.'
         
         sql = f"""INSERT INTO {self.table_products} (Product_ID, Name, Image, Description, Msrp)
-        VALUES  ({_product_id},"{_name}","{_image}","{_desc}", {_msrp});"""
+        VALUES  ({product_id},"{name}","{image}","{description}", {msrp});"""
         
         print(f'Attempting: {sql}')
 
@@ -189,16 +189,16 @@ class Model:
 
     #def createProduct():
     
-    def add_store(self, _store_id=None, _type=None, _address=None):
+    def add_store(self, store_id=None, type=None, address=None):
         #Sanitize the arguments
-        _store_id = self.scrub(_store_id)
-        _type = self.scrub(_type)
-        _address = self.scrub(_address)
+        store_id = self.scrub(store_id)
+        type = self.scrub(type)
+        address = self.scrub(address)
         
         sql = f"""INSERT INTO {self.table_stores}
         (Store_ID, Type, Address)
         VALUES
-        ({_store_id}, "{_type}", "{_address}")
+        ({store_id}, "{type}", "{address}")
         ;"""
  
         self.do_sql(sql)
@@ -206,22 +206,26 @@ class Model:
         print("Store Created!")
 
                 
-    def add_quantity(self,_product_id=None, _store_id=None, _quantity=None):
+    def add_quantity(self,product_id=None, store_id=None, quantity=None):
         #sanitize the arguments
-        _product_id = self.scrub(_product_id)
-        _store_id = self.scrub(_store_id)
-        _quantity = self.scrub(_quantity)        
+        product_id = self.scrub(product_id)
+        store_id = self.scrub(store_id)
+        quantity = self.scrub(quantity)        
         
         sql = f"""INSERT INTO {self.table_quantities}
         (Product_ID, Store_ID, Quantity)
         VALUES
-        ({_product_id}, {_store_id}, {_quantity})
+        ({product_id}, {store_id}, {quantity})
         ;"""
         
 
         self.do_sql(sql)
         self.conn.commit()
         print("Quantity created")
+        
+    def add_product_quantity(self, pq):
+        self.add_product(pq.get_product_id(), pq.get_name(), pq.get_image(), pq.get_description(), pq.get_msrp())
+        self.add_quantity(pq.get_product_id(), pq.get_store_id(), pq.get_quantity())
    
     """
     Conversion functions
@@ -443,9 +447,9 @@ class Model:
     Set Quantities
     """
     #TODO:
-    def set_quantity(self, _product_id, _store_id, _quantity):
+    def set_quantity(self, _product_id, _store_id, quantity):
         sql = f"""UPDATE {self.table_quantities}
-        SET Quantity = {_quantity}
+        SET Quantity = {quantity}
         WHERE Product_ID = {_product_id} AND Store_ID = {_store_id};"""
         
 

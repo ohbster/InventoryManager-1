@@ -28,3 +28,6 @@ class Controller(object):
     
     def get_product_quantities(self, _store_id):
         return self.model.get_product_quantities(_store_id)
+    
+    def add_product_quantity(self, _product_quantity = None):
+        self.model.add_product_quantity(_product_quantity)

@@ -2,9 +2,10 @@ import EntityBase
 
 class Store(EntityBase.EntityBase):
     def __init__(self, store_id=None, type=None, address=None):
-        self.store_id = store_id
-        self.type = type
-        self.address = address
+        
+        self.set_store_id(store_id)
+        self.set_type(type)
+        self.set_address(address)
         
     """
     Getters
@@ -18,3 +19,12 @@ class Store(EntityBase.EntityBase):
     def get_address(self):
         return self.address
         
+        
+    def set_store_id(self, store_id):
+        self.store_id = self.sanitize(store_id)
+        
+    def set_type(self, type):
+        self.type = self.sanitize(type)
+        
+    def set_address(self, address):
+        self.address = self.sanitize(address)

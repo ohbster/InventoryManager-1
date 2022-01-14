@@ -2,10 +2,10 @@ import EntityBase
 
 class Quantity(EntityBase.EntityBase):
     def __init__(self, product_id=None, store_id=None, quantity=None):
-        self.product_id = product_id
-        self.store_id = store_id
-        self.quantity = quantity
-        
+        self.set_product_id(product_id)
+        self.set_store_id(store_id)
+        self.set_quantity(quantity)
+                          
         #TODO: include and active bit to enable deactivating listings per stores
         
     """
@@ -23,10 +23,12 @@ class Quantity(EntityBase.EntityBase):
     """
     Setters
     """
-    def set_quantity(self, _quantity):
-        self.quantity = self.sanitize(_quantity) 
+    def set_quantity(self, quantity):
+        self.quantity = self.sanitize(quantity) 
         
+    def set_store_id(self, store_id):
+        self.store_id = self.sanitize(store_id)
         
-
-
+    def set_product_id(self, product_id):
+        self.product_id = self.sanitize(product_id)
         

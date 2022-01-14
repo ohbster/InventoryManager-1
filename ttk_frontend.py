@@ -5,8 +5,9 @@ import webbrowser
 import Product
 import Store
 import Quantity
-import ProductQuantity
+from ProductQuantity import ProductQuantity
 from tkinter import filedialog as fd
+from tkinter.messagebox import showinfo
 
 
 
@@ -100,7 +101,13 @@ class View(object):
            )
         
         style.configure("TFrame", 
-            background = bg_medium)
+            background = bg_medium
+            )
+        
+        style.configure("TRadiobutton",
+                        background = bg_medium,
+                        foreground = fg_default,
+                        focuscolor = bg_dark)
         
         style.configure("Treeview",
             fieldbackground = bg_medium,
@@ -254,15 +261,21 @@ class InventoryTab(object):
         #add_tab_btn = ttk.Button(tab_frame, text="+")
         #add_tab_btn.pack()
         
-        """
+        """*****************
         Inventory Frame
         
+        ********************
         """
 
         inventory_frame = Frame(inventory_tab)
         inventory_frame.grid_columnconfigure(0, weight=1)
         inventory_frame.grid_rowconfigure(0, weight=1)
         inventory_frame.grid(row=0, column=0)
+        
+        """
+        Treeview that displays all inventory information for current store
+        
+        """
         
         self.tv = ttk.Treeview(inventory_frame)
         self.tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
@@ -282,16 +295,24 @@ class InventoryTab(object):
         self.tv.heading('MSRP', text='MSRP', anchor=CENTER)
         self.tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
 
+        
+        #The below function will populate the treeview with info from the database
         self.draw_inventory()
+        
         self.tv.grid(row=0, column=0, sticky='ew')
         
+        
+        #Vertical scroll bar to the side
         scrollbar_v = ttk.Scrollbar(inventory_frame, orient='vertical', command=self.tv.yview)
         scrollbar_v.grid(row=0, column=1, sticky='ns')
         
+        #assign the scroll bar to the treeview
         self.tv['yscrollcommand'] = scrollbar_v.set
+        
         
         """
         Right Side Panel
+        where the action buttons are going
         
         """
         panel_frame = ttk.Frame(inventory_frame)
@@ -315,34 +336,41 @@ class InventoryTab(object):
         
         #Update the quantity of selected product
         update_btn = Button(panel_frame, text = 'Update', width=15)
-        update_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        update_btn.bind('<Button>', lambda e: self.openUpdateWindow(inventory_tab))
         update_btn.pack(ipadx = 7)
         
         #Redraw the inventory_frame
         refresh_btn = Button(panel_frame, text = 'Refresh', width=15)
-        refresh_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        #refresh_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        refresh_btn.bind('<Button>', lambda e: self.redraw(tab_control, store))
         refresh_btn.pack(ipadx = 7)    
 
     def draw_inventory(self):
-        
-        #myPQ = ProductQuantity.ProductQuantity(1,"test", "test.jpg", "This is a test", 12.00,1, 20 )
+        #create a list of ProductQuantity objects, holding data from Product table and Quantity table
         pq_list = self.controller.get_product_quantities(self.get_store_id())
+        
+        i = 0
         for myPQ in pq_list:
         
-            self.tv.insert(parent='', index=0, iid=0, text='', values=(myPQ.get_product_id(),
+            self.tv.insert(parent='', index=0, iid=i, text='', values=(myPQ.get_product_id(),
                                                                 myPQ.get_name(),
                                                                 myPQ.get_image(),
                                                                 myPQ.get_description(),
                                                                 f'${myPQ.get_msrp():.2f}',
                                                                 myPQ.get_quantity()
                                                                 ))
-        self.tv.grid(row=1, column=0)
+            i += 1
+        #self.tv.grid(row=1, column=0, sticky='ns')
+    
+    
+
     
     def openNewWindow(self, parent):
         newWindow = Toplevel(parent)
         newWindow.title("Add a new product")
         newWindow.geometry("500x200")
         
+        #parameter for spacing out widgets
         field_width = 30
         
         def open_image():
@@ -361,15 +389,19 @@ class InventoryTab(object):
         def submit():
             #store the data to a new ProductQuantity object, and tell let 
             #the object do the hard work of sanitizing and adding
+            
+            #check that all the fields are valid before creating an object
+            
             pq = ProductQuantity(product_id = pid_entry.get(),
                                  name = name_entry.get(),
                                  image = image_entry.get(),
                                  description = description_entry.get(),
                                  msrp = msrp_entry.get(),
-                                 store_id = self.get_store_id(),
+                                 store_id = self.get_store_id(), #The store id belongs to the current Tab
                                  quantity = quantity_entry.get()
                                  )
-            
+            self.controller.add_product_quantity(pq)
+            newWindow.destroy()
             
             #print(pid_entry.get())
         
@@ -415,7 +447,7 @@ class InventoryTab(object):
         submit_btn = Button(newWindow, text = 'Submit')
         
         #submit_btn.bind('<Return>', lambda e: self.submit())
-        submit_btn.bind('<Button>', lambda e: self.openInProgress(newWindow))
+        submit_btn.bind('<Button>', lambda e: submit())
         submit_btn.grid(row = 6, column = 1)
 
 
@@ -423,12 +455,53 @@ class InventoryTab(object):
     List all available products in the Products table and allow user to add some to their inventory
     If item is already in inventory, add to it
     """
-    def openAddWindow(self,parent):
+    def openAddWindow(self, parent):
         addWindow = Toplevel(parent)
         addWindow.title('Add to Inventory')
         addWindow.geometry('500x300')
         
+    def openUpdateWindow(self, parent):
+        updateWindow = Toplevel(parent)
+        updateWindow.geometry('400x220')
+        updateWindow.resizable(False, False)
+        updateWindow.title('Add or Remove')
+        
+        def show_selected():
+            showinfo(
+                title='Result',
+                message = selected_action.get())
+            
+        selected_action = StringVar()
+        actions = (('Receive (Add to inventory)','R'),
+                   ('Ship (Subtract from inventory)', 'S'))
+        
+        label = Label(updateWindow, text = 'Please make a selection')
+        label.pack(fill='x', padx=7, pady=7)
+        
+        for action in actions:
+            r = Radiobutton(updateWindow, 
+                            text = action[0],
+                            value = action[1],
+                            variable = selected_action
+                            )
+            r.pack(fill = 'x', padx = 7, pady = 7)
+        
+        entry = Entry(updateWindow, width = 10)
+        entry.insert(INSERT,0)
+        
+        entry.pack()
+        
+        button = Button(updateWindow, text = 'Get Selection', command = show_selected)
+        button.pack(fill = 'x', padx = 5, pady = 5)
+            
+        
+        
     def openInProgress(self, parent):
+        showinfo(
+            title = 'Result',
+            message= """This feature is still under construction. Check back as this code is updated frequently.""")
+        
+        """
         inProgress = Toplevel(parent)
         inProgress.title('This feature is not yet available')
         inProgress.geometry('300x100')
@@ -441,6 +514,15 @@ class InventoryTab(object):
         closeBtn = Button(inProgress, text = 'Close', command = inProgress.destroy)
         closeBtn.pack(pady = 5)
         #closeBtn.bind('<Return>', lambda e: )
+        """
+    def redraw(self, tab_control = None, store = None):
+        for line in self.tv.get_children():
+            self.tv.delete(line)
+        
+        self.draw_inventory()
+        
+
+        
 """
 Create a color scheme for the rows of the table
 Alternate between light and bg_dark to make it easier to read
