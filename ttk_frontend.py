@@ -8,6 +8,9 @@ import Quantity
 from ProductQuantity import ProductQuantity
 from tkinter import filedialog as fd
 from tkinter.messagebox import showinfo
+from test.test_binop import isnum
+from future.utils import isint
+from idlelib.idle_test.test_warning import showwarning
 
 
 
@@ -462,59 +465,91 @@ class InventoryTab(object):
         
     def openUpdateWindow(self, parent):
         updateWindow = Toplevel(parent)
-        updateWindow.geometry('400x220')
+        updateWindow.geometry('400x170')
         updateWindow.resizable(False, False)
         updateWindow.title('Add or Remove')
+        updateWindow.lift()
+        #updateWindow.attributes('-topmost', 1)
         
         def show_selected():
             showinfo(
                 title='Result',
                 message = selected_action.get())
             
+        def submit():
+            """
+            1.)check if value in entry field is a positive integer.
+            if no: prompt user to enter valid input
+            if yes: proceed
+            2.)get the current value of Quantity.quantity for Product_ID and Store_ID
+            controller.get_quantity(product_id, store_id).get_quantity()
+            
+            3.)check the value of selected_action. 
+            if 'R' for receive: do set_quantity(product_id, store_id, (current quantity + entry value))
+            if 'S' for ship: check if entry value is greater than current value. If so, prompt user 
+            that there is not enough inventor and to enter a new value.
+            if not greater, do set_quantity(product_id, store_id, (current quantity - entry value))
+            
+            4.)Redraw and destroy updateWindow
+            
+            
+            """
+            
+            if (not isint(entry.get())) or entry.get() < 0:
+                showinfo(title = 'Invalid Input', message = "Please enter a positive integer")
+                
+            else:
+                show_selected()
+            
         selected_action = StringVar()
-        actions = (('Receive (Add to inventory)','R'),
-                   ('Ship (Subtract from inventory)', 'S'))
+        action1 = ('Receive (Add to inventory)','R')
+                   
+        action2 = ('Ship (Subtract from inventory)', 'S')
         
         label = Label(updateWindow, text = 'Please make a selection')
         label.pack(fill='x', padx=7, pady=7)
         
-        for action in actions:
-            r = Radiobutton(updateWindow, 
-                            text = action[0],
-                            value = action[1],
-                            variable = selected_action
-                            )
-            r.pack(fill = 'x', padx = 7, pady = 7)
+        #Add option
+        r1 = Radiobutton(updateWindow, 
+                        text = action1[0],
+                        value = action1[1],
+                        variable = selected_action
+                        )
+        r1.pack(fill = 'x', padx = 5, pady = 5)
+        r1.invoke() #default option
         
+        #Subtract option
+        r2 = Radiobutton(updateWindow, 
+                        text = action2[0],
+                        value = action2[1],
+                        variable = selected_action
+                        )
+        r2.pack(fill = 'x', padx = 5, pady = 5)
+        
+        entryLabel = Label(updateWindow, text = 'Enter positive integer')
+        entryLabel.pack(fill = 'x', padx = 5, pady = 5)
+        
+        #field to enter a positive integer
         entry = Entry(updateWindow, width = 10)
         entry.insert(INSERT,0)
+        entry.pack(fill = 'x', padx = 5, pady = 5)
         
-        entry.pack()
-        
-        button = Button(updateWindow, text = 'Get Selection', command = show_selected)
+        button = Button(updateWindow, text = 'Get Selection', command = submit)
         button.pack(fill = 'x', padx = 5, pady = 5)
+        
+        
+                 
+            
             
         
         
     def openInProgress(self, parent):
         showinfo(
             title = 'Result',
-            message= """This feature is still under construction. Check back as this code is updated frequently.""")
+            message= """This feature is still under construction. Check back as this code is updated frequently."""
+            )
         
-        """
-        inProgress = Toplevel(parent)
-        inProgress.title('This feature is not yet available')
-        inProgress.geometry('300x100')
-        
-        label = Label(inProgress, text='This feature is under construction.')
-        label.pack(pady=5)
-        label2 = Label(inProgress, text = 'Please check back as I am usually updating')
-        label2.pack(pady=5)
-        
-        closeBtn = Button(inProgress, text = 'Close', command = inProgress.destroy)
-        closeBtn.pack(pady = 5)
-        #closeBtn.bind('<Return>', lambda e: )
-        """
+
     def redraw(self, tab_control = None, store = None):
         for line in self.tv.get_children():
             self.tv.delete(line)
