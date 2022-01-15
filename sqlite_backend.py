@@ -447,10 +447,10 @@ class Model:
     Set Quantities
     """
     #TODO:
-    def set_quantity(self, _product_id, _store_id, quantity):
+    def set_quantity(self, product_id, store_id, quantity):
         sql = f"""UPDATE {self.table_quantities}
         SET Quantity = {quantity}
-        WHERE Product_ID = {_product_id} AND Store_ID = {_store_id};"""
+        WHERE Product_ID = {product_id} AND Store_ID = {store_id};"""
         
 
         self.do_sql(sql)

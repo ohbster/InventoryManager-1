@@ -8,9 +8,8 @@ import Quantity
 from ProductQuantity import ProductQuantity
 from tkinter import filedialog as fd
 from tkinter.messagebox import showinfo
-from test.test_binop import isnum
-from future.utils import isint
-from idlelib.idle_test.test_warning import showwarning
+from tkinter.messagebox import showwarning
+
 
 
 
@@ -37,6 +36,16 @@ class View(object):
             self.parent = root
         
         win = self.parent
+        
+        """******************
+        DISCLAIMER
+        
+        *********************
+        """
+        showwarning(title = 'Disclaimer', message = "This program is under development. It is incomplete, buggy, experimental" 
+        + " and is not intended for use in a real business scenario. Many things are missing or broken. "
+        + " Not meant for production purpose. Only meant for peer review. Any feedback is appreciated, ohbster@protonmail.com")
+        
         
         """***********************
         MVC Stuff goes here
@@ -280,15 +289,15 @@ class InventoryTab(object):
         
         """
         
-        self.tv = ttk.Treeview(inventory_frame)
+        self.tv = ttk.Treeview(inventory_frame, selectmode = 'browse')
         self.tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP', 'Quantity on Hand')
         self.tv.column('#0', width=0, stretch=NO)
-        self.tv.column('Product ID', anchor=CENTER, width=80)
-        self.tv.column('Name', anchor=CENTER, width=80)
-        self.tv.column('Image', anchor=CENTER, width=80)
-        self.tv.column('Description', anchor=CENTER, width=80)
-        self.tv.column('MSRP', anchor=CENTER, width=80)
-        self.tv.column('Quantity on Hand', anchor=CENTER, width=80)
+        self.tv.column('Product ID', anchor=CENTER, width=70)
+        self.tv.column('Name', anchor=CENTER, width=120)
+        self.tv.column('Image', anchor=CENTER, width=120)
+        self.tv.column('Description', anchor=CENTER, width=170)
+        self.tv.column('MSRP', anchor=CENTER, width=60)
+        self.tv.column('Quantity on Hand', anchor=CENTER, width=60)
         
         self.tv.heading('#0', text='', anchor=CENTER)
         self.tv.heading('Product ID', text='Product ID', anchor=CENTER)
@@ -296,7 +305,7 @@ class InventoryTab(object):
         self.tv.heading('Image', text='Image', anchor=CENTER)
         self.tv.heading('Description', text='Description', anchor=CENTER)
         self.tv.heading('MSRP', text='MSRP', anchor=CENTER)
-        self.tv.heading('Quantity on Hand', text='Quantity on Hand', anchor=CENTER)
+        self.tv.heading('Quantity on Hand', text='Quantity', anchor=CENTER)
 
         
         #The below function will populate the treeview with info from the database
@@ -345,7 +354,7 @@ class InventoryTab(object):
         #Redraw the inventory_frame
         refresh_btn = Button(panel_frame, text = 'Refresh', width=15)
         #refresh_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
-        refresh_btn.bind('<Button>', lambda e: self.redraw(tab_control, store))
+        refresh_btn.bind('<Button>', lambda e: self.redraw())
         refresh_btn.pack(ipadx = 7)    
 
     def draw_inventory(self):
@@ -404,6 +413,7 @@ class InventoryTab(object):
                                  quantity = quantity_entry.get()
                                  )
             self.controller.add_product_quantity(pq)
+            self.redraw()
             newWindow.destroy()
             
             #print(pid_entry.get())
@@ -468,8 +478,8 @@ class InventoryTab(object):
         updateWindow.geometry('400x170')
         updateWindow.resizable(False, False)
         updateWindow.title('Add or Remove')
-        updateWindow.lift()
         #updateWindow.attributes('-topmost', 1)
+        selected_item = self.tv.focus()
         
         def show_selected():
             showinfo(
@@ -495,11 +505,53 @@ class InventoryTab(object):
             
             """
             
-            if (not isint(entry.get())) or entry.get() < 0:
-                showinfo(title = 'Invalid Input', message = "Please enter a positive integer")
-                
+            if ( (entry.get().isdigit())):
+                if (int(entry.get()) > 0):
+                    #show_selected()
+                    #valid input has been given
+                    print(self.tv.item(selected_item))
+                    
+                    #get the quantity from the user entered number
+                    update_value = int(entry.get())
+                    #get product id from currently selected item
+                    product_id = self.tv.item(selected_item)['values'][0]
+                    
+                    #get the current quantity from database (in case something has changed)
+                    cur_value = self.controller.get_quantity(product_id, self.get_store_id()).get_quantity()
+                    
+                    
+                    #check radio button selection
+                    if selected_action.get() == 'R':
+                        new_value = cur_value + update_value
+                        #tell the controller to update this record in the database with new value
+                        self.controller.set_quantity(product_id, self.get_store_id(), new_value)
+                        #refresh the treeview and close the update window
+                        self.redraw()
+                        updateWindow.destroy()
+                        #print(f'New quantity = {new_value}')
+                    elif selected_action.get() == 'S':
+                        #Test if there is enough inventory to ship 
+                        if update_value > cur_value:
+                            showwarning(title = 'Not enough inventory', 
+                                        message = f"Can't ship {update_value}: only {cur_value} in stock")
+                            
+                        else:
+                            #tell the controller to update this record in the database with new value
+                            new_value = cur_value - update_value
+                            self.controller.set_quantity(product_id, self.get_store_id(), new_value)
+                            #refresh the treeview and close the update window
+                            self.redraw()
+                            updateWindow.destroy()
+                    
+                    
+                    
+                    
+                    
             else:
-                show_selected()
+
+                showwarning(title = 'Invalid Input', 
+                        message = f"Please enter a integer greater than 0")
+                
             
         selected_action = StringVar()
         action1 = ('Receive (Add to inventory)','R')
@@ -516,7 +568,7 @@ class InventoryTab(object):
                         variable = selected_action
                         )
         r1.pack(fill = 'x', padx = 5, pady = 5)
-        r1.invoke() #default option
+        
         
         #Subtract option
         r2 = Radiobutton(updateWindow, 
@@ -526,6 +578,8 @@ class InventoryTab(object):
                         )
         r2.pack(fill = 'x', padx = 5, pady = 5)
         
+        
+        
         entryLabel = Label(updateWindow, text = 'Enter positive integer')
         entryLabel.pack(fill = 'x', padx = 5, pady = 5)
         
@@ -534,10 +588,12 @@ class InventoryTab(object):
         entry.insert(INSERT,0)
         entry.pack(fill = 'x', padx = 5, pady = 5)
         
-        button = Button(updateWindow, text = 'Get Selection', command = submit)
+        button = Button(updateWindow, text = 'Update Inventory', command = submit)
         button.pack(fill = 'x', padx = 5, pady = 5)
         
-        
+        updateWindow.transient(parent)
+        r1.invoke() #default option
+        #updateWindow.grab_set()
                  
             
             
@@ -550,7 +606,7 @@ class InventoryTab(object):
             )
         
 
-    def redraw(self, tab_control = None, store = None):
+    def redraw(self):
         for line in self.tv.get_children():
             self.tv.delete(line)
         
@@ -566,5 +622,3 @@ And a Light and Dark alert color
 Alternate between odd and even rows on the table.
 
 """
-
-           
