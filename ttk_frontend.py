@@ -2,9 +2,9 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import ttk as ttk
 import webbrowser
-import Product
-import Store
-import Quantity
+from Product import Product
+from Store import Store
+from Quantity import Quantity
 from ProductQuantity import ProductQuantity
 from tkinter import filedialog as fd
 from tkinter.messagebox import showinfo
@@ -100,9 +100,9 @@ class View(object):
         style.configure("TNotebook",
             background = bg_medium,
             
-            lightcolor = bg_medium
-            #darkcolor = bg_dark,
-            #bordercolor = bg_medium,
+            lightcolor = bg_medium,
+            darkcolor = bg_dark,
+            bordercolor = bg_medium
             #foreground = bg_medium
             #tabposition='sw'
             )
@@ -166,7 +166,7 @@ class View(object):
         win = self.parent
        
         win.title('Inventory Manager')
-        win.geometry('800x200')
+        win.geometry('800x300')
         
         mn = Menu(win)
         win.config(menu=mn)
@@ -246,7 +246,7 @@ class InventoryTab(object):
         
         #Store object will hold relevent info to the store tab
         self.tv =  None
-        self.store = Store.Store()
+        self.store = Store()
         self.store = store
         self.draw_tab(tab_control=tab_control,store=store)
         #quantities = _parent.controller.get_quantities()
@@ -342,7 +342,7 @@ class InventoryTab(object):
         
         #used to add a product to current inventory
         add_btn = Button(panel_frame, text = 'Add Inventory', width = 15)
-        add_btn.bind('<Button>', lambda e: self.openInProgress(inventory_tab))
+        add_btn.bind('<Button>', lambda e: self.openAddWindow(inventory_tab))
         
         add_btn.pack(ipadx = 7)
         
@@ -376,6 +376,7 @@ class InventoryTab(object):
     
     
 
+        
     
     def openNewWindow(self, parent):
         newWindow = Toplevel(parent)
@@ -471,11 +472,88 @@ class InventoryTab(object):
     def openAddWindow(self, parent):
         addWindow = Toplevel(parent)
         addWindow.title('Add to Inventory')
-        addWindow.geometry('500x300')
+        addWindow.geometry('700x300')
+
+        def submit():
+            value = quantity_entry.get()
+            selected_item = product_tv.focus()
+
+            if value.isdigit() and int(value)>0:
+                product_id = product_tv.item(selected_item)['values'][0]
+                self.controller.add_quantity(product_id, self.get_store_id(), int(value))
+                self.redraw()
+                addWindow.destroy()
+            else:
+                showwarning(title='Invalid Input', message="Enter a positive integer value")
+
+
+        """
+        Product Treeview
+        """
+
+        product_tv = ttk.Treeview(addWindow, selectmode = 'browse')
+        product_tv['columns']=('Product ID', 'Name', 'Image', 'Description', 'MSRP')
+        product_tv.column('#0', width=0, stretch=NO)
+        product_tv.column('Product ID', anchor=CENTER, width=70)
+        product_tv.column('Name', anchor=CENTER, width=120)
+        product_tv.column('Image', anchor=CENTER, width=120)
+        product_tv.column('Description', anchor=CENTER, width=170)
+        product_tv.column('MSRP', anchor=CENTER, width=60)
+
+        product_tv.heading('#0', text='', anchor=CENTER)
+        product_tv.heading('Product ID', text='Product ID', anchor=CENTER)
+        product_tv.heading('Name', text='Name', anchor=CENTER)
+        product_tv.heading('Image', text='Image', anchor=CENTER)
+        product_tv.heading('Description', text='Description', anchor=CENTER)
+        product_tv.heading('MSRP', text='MSRP', anchor=CENTER)
+
+        product_list = self.controller.get_unlisted_products(self.get_store_id())
+        #product_list = self.controller.get_products()
+
+        
+        i = 0
+        for product in product_list:
+        
+            product_tv.insert(parent='', index=0, iid=i, text='', values=(product.get_product_id(),
+                                                                product.get_name(),
+                                                                product.get_image(),
+                                                                product.get_description(),
+                                                                f'${product.get_msrp():.2f}' 
+                                                                ))
+            i += 1
+
+        
+        product_tv.grid(row = 0, column =0, sticky = 'ew')
+
+        #Vertical scroll bar to the side
+        scrollbar_v = ttk.Scrollbar(addWindow, orient='vertical', command=product_tv.yview)
+        scrollbar_v.grid(row=0, column=1, sticky='ns')
+        
+        #assign the scroll bar to the treeview
+        product_tv['yscrollcommand'] = scrollbar_v.set
+
+        """
+        Entry
+        """
+        quantity_label = Label(addWindow, text = "How many do you want to add into inventory?")
+        quantity_label.grid(row = 1, column =0)
+
+        quantity_entry = Entry(addWindow, width = 15)
+        quantity_entry.grid(row = 2, column = 0)
+
+        submit_btn = Button(addWindow, text = 'Submit', width = 15, command = submit)
+        submit_btn.grid(row = 3, column = 0)
+
+
+
+        addWindow.transient(parent)
+        
+
+
         
     def openUpdateWindow(self, parent):
         updateWindow = Toplevel(parent)
-        updateWindow.geometry('400x170')
+        updateWindow.geometry('400x250')
         updateWindow.resizable(False, False)
         updateWindow.title('Add or Remove')
         #updateWindow.attributes('-topmost', 1)

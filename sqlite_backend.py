@@ -286,7 +286,10 @@ class Model:
 
         if result is not None:
             return list(map(lambda x: self.tuple_to_product(x), result))
-            
+
+        else:
+            return None
+
     def get_product(self, _product_id):
         sql = f"""SELECT * FROM Products
         WHERE Product_ID = {_product_id}; """
@@ -412,6 +415,23 @@ class Model:
             return list(map(lambda x: self.tuple_to_product_quantity(x), result))
         else:
             print(f"Warning: Query returned no results: <{sql}>")
+            return None
+
+    def get_unlisted_products(self, store_id):
+        sql = f"""SELECT * FROM Products
+        WHERE Product_ID NOT IN (
+        SELECT Product_ID FROM Quantities
+        WHERE Store_ID  = {store_id}
+        )
+        ;"""
+
+        c = self.do_sql(sql)
+        result = c.fetchall()
+
+        if result is not None:
+            return list(map(lambda x: self.tuple_to_product(x), result))
+
+        else:
             return None
   
     """ 
