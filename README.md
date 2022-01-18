@@ -4,6 +4,9 @@ Starter project for learning python. Me diving into python. Please don't use thi
 
 This thing is a work in progress. Eventually it will display info about products and keep track of how many there are on hand. It will also be able help ship and receieve new inventory when it is done. It will monitor how many items have been sold and are available to certain stores, and make alerts when inventory is running low. 
 
+requires Tkinter
+may need to run
+sudo apt install python3-tk
 To start it, execute the inventorymanager.py file.
 
 

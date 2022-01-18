@@ -5,13 +5,19 @@ class Controller(object):
         self.model = _model
         self.view = _view
     
-    def draw_inventory(self):
+    def draw_inventory(self): #check this one
         products = self.model.get_product()
         self.view.draw_inventory()
         
-    def show_product(self, _product_id):
+    def show_product(self, _product_id): #check this one
         item = self.model.get_item(_product_id)
         self.view.draw_inventory()
+
+    def get_products(self):
+        return self.model.get_products()
+
+    def get_unlisted_products(self, store_id):
+        return self.model.get_unlisted_products(store_id)
         
     def get_store(self, store_id):
         store = self.model.get_store(store_id)
@@ -32,6 +38,9 @@ class Controller(object):
     def get_product_quantities(self, _store_id):
         return self.model.get_product_quantities(_store_id)
     
+    def add_quantity(self,product_id=None, store_id=None, quantity=None):
+        return self.model.add_quantity(product_id, store_id, quantity)
+
     def add_product_quantity(self, _product_quantity = None):
         self.model.add_product_quantity(_product_quantity)
         
